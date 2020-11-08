@@ -1,140 +1,155 @@
 import tkinter as tk
 import math
+from ohm import Ohm
 
 class Application(tk.Frame):
-    # Frame intialisieren
+    # initialize instance
     def __init__(self, master=None):
         super().__init__(master)
-        # Application konfigurieren
+        # setup application
         self.master = master
-        self.master.title ("Ohmsches Gesetz")
+        self.master.title ("Ohms Law")
         self.master.minsize(354, 213)
         self.master.maxsize(1000, 720)
-        # Event-Handler für Fensteränderungen (Größe/Position)
+        # binding event handling method for window configuration
+        # (resize, move)
         self.master.bind("<Configure>", self.handleConfigure)
-        # Event-Handler: Enter-Taste führt Berechnung aus
+        # binding event handler for "return"-key
         self.master.bind("<Return>", self.handleCalculate)
-        # Escape-Taste zum Beenden - tut Fehler: destroy() takes 1 positional argument but 2 were given
-        # self.master.bind("<Escape>", self.master.destroy)
         self.pack(fill='both')
-        # Widgets hinzufügen
+        # adding widgets
         self.createWidgets()
-        # Größenänderung für Spalte 1 = Texteingabe anpassen (funzt nur mit pack(fill='both'))
+        # auto-resize column 1 (=entries),
+        # works only with "self.pack(fill='both'))""
         self.grid_columnconfigure(1, weight=1)
 
-    # Validierungsfunktion der Eingabe im Entry-Widget
+    # validating input: float only
     def isFloat(self, content):
         try:
-            return float(content)
+            return content=="0" or content=="0." or float(content)
         except:
             return content==""
     
-    # Entry mit Inhalt setzen
+    # set content (what) of entry widget (where)
     def setEntry(self, where, what):
         if where.get():
             where.delete(0, len(where.get()))
         where.insert(0, str(what))
-    
-    # Anweisungen für Button-Click
-    def handleCalculate(self, event):
-        # Spannung und Stromstärke aus Leistung P und Widerstand R
-        if self.inp_Power.get() and self.inp_Resistance.get():
-            # V = Wurzel(P * R)
-            self.setEntry(self.inp_Voltage, round(math.sqrt(float(self.inp_Power.get()) * float(self.inp_Resistance.get())), 2))
-            # I = Wurzel (P / R)
-            self.setEntry(self.inp_Current, round(math.sqrt(float(self.inp_Power.get()) / float(self.inp_Resistance.get())), 2))
-            return
-        # Widerstand und Stromstärke aus Leistung P und Spannung V
-        if self.inp_Power.get() and self.inp_Voltage.get():
-            # R = V² / P
-            self.setEntry(self.inp_Resistance, round(math.pow(float(self.inp_Voltage.get()), 2) / float(self.inp_Power.get()), 2))
-            # I = P / V
-            self.setEntry(self.inp_Current, round(float(self.inp_Power.get()) / float(self.inp_Voltage.get()), 2))
-            return
-        # Widerstand R und Spannung V aus Leistung P und Stromstärke I
-        if self.inp_Power.get() and self.inp_Current.get():
-            # R = P / I²
-            self.setEntry(self.inp_Resistance, round(float(self.inp_Power.get()) / math.pow(float(self.inp_Current.get()), 2), 2))
-            # V = P / I
-            self.setEntry(self.inp_Voltage, round(float(self.inp_Power.get()) / float(self.inp_Current.get()), 2))
-            return
-        # Leistung P und Stromstärke I aus Widerstand R und Spannung V
-        if self.inp_Resistance.get() and self.inp_Voltage.get():
-            # P = V² / R
-            self.setEntry(self.inp_Power, round(math.pow(float(self.inp_Voltage.get()), 2) / float(self.inp_Resistance.get()), 2))
-            # I = V / R
-            self.setEntry(self.inp_Current, round(float(self.inp_Voltage.get()) / float(self.inp_Resistance.get()), 2))
-            return
-        # Leistung P und Spannung V aus Widerstand R und Stromstärke I
-        if self.inp_Resistance.get() and self.inp_Current.get():
-            # P = I² * R
-            self.setEntry(self.inp_Power, round(math.pow(float(self.inp_Current.get()), 2) * float(self.inp_Resistance.get()), 2))
-            # V = I * R
-            self.setEntry(self.inp_Voltage, round(float(self.inp_Current.get()) * float(self.inp_Resistance.get()), 2))
-            return
-        # Leistung P und Widerstand R aus Spannung V und Stromstärke I
-        if self.inp_Voltage.get() and self.inp_Current.get():
-            # P = V * I
-            self.setEntry(self.inp_Power, round(float(self.inp_Voltage.get()) * float(self.inp_Current.get()), 2))
-            # R = V / I
-            self.setEntry(self.inp_Resistance, round(float(self.inp_Voltage.get()) / float(self.inp_Current.get()), 2))
-            return
 
-    # Änderung des Fensters verarbeiten
-    def handleConfigure(self, event):
-        print("window size and position: ", self.master.winfo_geometry())
-
-    # Eingabefelder zurücksetzen
+    # clear all entry widgets
     def clearEntries(self, event):
-        self.setEntry(self.inp_Power, "")
-        self.setEntry(self.inp_Resistance, "")
-        self.setEntry(self.inp_Voltage, "")
-        self.setEntry(self.inp_Current, "")
+        self.setEntry(self.entPower, "")
+        self.setEntry(self.entResistance, "")
+        self.setEntry(self.entVoltage, "")
+        self.setEntry(self.entCurrent, "")
+    
+    # executing calculation with input values and following priority
+    # 1.: power
+    # 2.: resistance
+    # 3.: voltage
+    # 4.: current
+    # means: eg. if power, resistance and voltage are entered, voltage will
+    # be overwritten (in case it is wrong)
+    def handleCalculate(self, event):
+        # read entries
+        p = self.entPower.get()
+        r = self.entResistance.get()
+        v = self.entVoltage.get()
+        i = self.entCurrent.get()
+        # power p and r are entered
+        if p and r:
+            v = Ohm.getVoltage(p=float(p), r=float(r))
+            i = Ohm.getCurrent(p=float(p), r=float(r))
+            self.setEntry(self.entVoltage, round(v, 2))
+            self.setEntry(self.entCurrent, round(i, 2))
+            return
+        # power p and voltage v are entered
+        elif p and v:
+            r = Ohm.getResistance(p=float(p), v=float(v))
+            i = Ohm.getCurrent(p=float(p), v=float(v))
+            self.setEntry(self.entResistance, round(r, 2))
+            self.setEntry(self.entCurrent, round(i, 2))
+            return
+        # resistance r and voltage v are entered
+        elif r and v:
+            p = Ohm.getPower(v=float(v), r=float(r))
+            i = Ohm.getCurrent(v=float(v), r=float(r))
+            self.setEntry(self.entPower, round(p, 2))
+            self.setEntry(self.entCurrent, round(i, 2))
+            return
+        # power p and current i are entered
+        elif p and i:
+            r = Ohm.getResistance(p=float(p), i=float(i))
+            v = Ohm.getVoltage(p=float(p), i=float(i))
+            self.setEntry(self.entResistance, round(r, 2))
+            self.setEntry(self.entVoltage, round(v, 2))
+            return
+        # resistance r and current i are entered
+        elif r and i:
+            p = Ohm.getPower(r=float(r), i=float(i))
+            v = Ohm.getVoltage(r=float(r), i=float(i))
+            self.setEntry(self.entPower, round(p, 2))
+            self.setEntry(self.entVoltage, round(v, 2))
+            return
+        # voltage v and current i are entered
+        elif v and i:
+            p = Ohm.getPower(v=float(v), i=float(i))
+            r = Ohm.getResistance(v=float(v), i=float(i))
+            self.setEntry(self.entPower, round(p, 2))
+            self.setEntry(self.entResistance, round(r, 2))
+            return
+        else:
+            # enter at least two values
+            pass
+    
+    # handels the configure event of the application
+    # (resize, move)
+    def handleConfigure(self, event):
+        #print("window size and position: ", self.master.winfo_geometry())
+        pass
 
-    # Widgets hinzufügen
+    # create widgets: label, entries, buttons
     def createWidgets(self):
-        # Validierungsfunktion 'isFloat' registrieren
-        vcmd = self.register(self.isFloat), '%P'
+        # register validation method'isFloat' %P reflects the result
+        # like after the keypress is accepted
+        vcmd = (self.register(self.isFloat), '%P')
 
-        # Überschrift:
+        # Label for headline:
         # Row 0
-        self.lbl_Header = tk.Label(self, text="Ohmsches Gesetz", font=(None, 14))
-        self.lbl_Header.grid(column=0, row=0, columnspan=3, padx='5', pady='5', sticky='nesw')
+        self.lblHeader = tk.Label(self, text="Ohms Law", font=(None, 14))
+        self.lblHeader.grid(column=0, row=0, columnspan=3, padx='5', pady='5', sticky='nesw')
 
-        # Eingabefelder:
-        # Row 1 (Leistung P in Watt)
-        self.lbl_Power = tk.Label(self, text="Leistung (P in Watt):").grid(column=0, row=1, padx='5', pady='5', sticky='nesw')
-        self.inp_Power = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
-        self.inp_Power.grid(column=1, row=1, columnspan=2, padx='5', pady='5', sticky="nesw")
-        # Row 2 (Widerstand R in Ohm)
-        self.lbl_Resistance = tk.Label(self, text="Widerstand (R in Ohm):").grid(column=0, row=2, padx='5', pady='5', sticky='nesw')
-        self.inp_Resistance = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
-        self.inp_Resistance.grid(column=1, row=2, columnspan=2, padx='5', pady='5', sticky="nesw")
-        # Row 3 (Spannung V in Volt)
-        self.lbl_Voltage = tk.Label(self, text="Spannung (V in Volt):").grid(column=0, row=3, padx='5', pady='5', sticky='nesw')
-        self.inp_Voltage = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
-        self.inp_Voltage.grid(column=1, row=3, columnspan=2, padx='5', pady='5', sticky="nesw")
-        # Row 4 (Stromstärle I in Ampere )
-        self.lbl_Current = tk.Label(self, text="Stromstärke (I in Ampere):").grid(column=0, row=4, padx='5', pady='5', sticky='nesw')
-        self.inp_Current = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
-        self.inp_Current.grid(column=1, row=4, columnspan=2, padx='5', pady='5', sticky="nesw")
-
-        # Leerzeile
-        # Row 5
-        # tk.Label(self).grid(column=0, row=5, padx='5', pady='5', sticky="nesw")
-
-        # Quit-Button erzeugen
-        # Row 5
-        # self.btn_quit = tk.Button(self, text="Beenden", command=self.master.destroy).grid(column=1, row=5, padx='5', pady='5', sticky="nes")
-        self.btn_clear = tk.Button(self, text="Löschen")
-        self.btn_clear.grid(column=1, row=5, padx='5', pady='5', sticky="nes")
-        self.btn_clear.bind("<Button-1>", self.clearEntries)
-        self.btn_run = tk.Button(self, text="Berechnen")
-        self.btn_run.grid(column=2, row=5, padx='5', pady='5', sticky="nesw")
-        self.btn_run.bind("<Button-1>", self.handleCalculate)
+        # labels with entry widgets
+        # Row 1: power
+        self.lblPower = tk.Label(self, text="1. Power (p in Watts):")
+        self.lblPower.grid(column=0, row=1, padx='5', pady='5', sticky='w')
+        self.entPower = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
+        self.entPower.grid(column=1, row=1, columnspan=2, padx='5', pady='5', sticky="nesw")
+        # Row 2: resistance
+        self.lblResistance = tk.Label(self, text="2. Resistance (r in Ohms):")
+        self.lblResistance.grid(column=0, row=2, padx='5', pady='5', sticky='w')
+        self.entResistance = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
+        self.entResistance.grid(column=1, row=2, columnspan=2, padx='5', pady='5', sticky="nesw")
+        # Row 3:voltage
+        self.lblVoltage = tk.Label(self, text="3. Voltage (v in Volts):")
+        self.lblVoltage.grid(column=0, row=3, padx='5', pady='5', sticky='w')
+        self.entVoltage = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
+        self.entVoltage.grid(column=1, row=3, columnspan=2, padx='5', pady='5', sticky="nesw")
+        # Row 4: current
+        self.lblCurrent = tk.Label(self, text="4. Current (i in Ampere):")
+        self.lblCurrent.grid(column=0, row=4, padx='5', pady='5', sticky='w')
+        self.entCurrent = tk.Entry(self, textvariable="", validate="key", validatecommand=vcmd)
+        self.entCurrent.grid(column=1, row=4, columnspan=2, padx='5', pady='5', sticky="nesw")
+        # Row 5: buttons
+        self.btnClear = tk.Button(self, text="Clear")
+        self.btnClear.grid(column=1, row=5, padx='5', pady='5', sticky="nes")
+        self.btnClear.bind("<Button-1>", self.clearEntries)
+        self.btnRun = tk.Button(self, text="Calculate!")
+        self.btnRun.grid(column=2, row=5, padx='5', pady='5', sticky="nesw")
+        self.btnRun.bind("<Button-1>", self.handleCalculate)
 
 # 
-# Hauptfensterinstanz (Frame-Widget)
+# instance of Tk class
 #
 root = tk.Tk()
 
@@ -143,8 +158,8 @@ root = tk.Tk()
 # root.option_add("*Button.Background", "black")
 # root.option_add("*Button.Foreground", "red")
 
-# Fenster in Frame-Widget (Haupfensterinstanz) aus der Klasse "Appication" (s.o.) erzeugen/befüllen
+# instance of Application class
 app = Application(master=root)
 
-# Application anzeigen
+# show application-instance
 app.mainloop()
