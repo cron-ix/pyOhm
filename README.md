@@ -6,7 +6,7 @@ Just for fun and learning some Python feat. TK interface. As I'm vaping and buil
 
 ## How?
 
-I created a class "Ohm" the does all the caluculation. And I created a GUI using Tk-widgets like Label, Entry and Button. On button click or return the class "Ohm" is used to calculate the missing values.
+I created a class "Ohm" the does all the calculation. And I created a GUI using Tk-widgets like Label, Entry and Button. On button click or return the class "Ohm" is used to calculate the missing values.
 
 Have fun with it. Ideas or questions are welcome.
 
