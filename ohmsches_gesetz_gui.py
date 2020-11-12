@@ -1,19 +1,5 @@
-#
-# MIT License
-# 
-# Copyright (c) 2020 cron-ix
-# 
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-# 
-# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-# IN THE SOFTWARE.
-
 import tkinter as tk
+from PIL import ImageTk, Image
 import math
 from ohm import Ohm
 
@@ -24,7 +10,8 @@ class Application(tk.Frame):
         # setup application
         self.master = master
         self.master.title ("Ohms Law")
-        self.master.minsize(354, 213)
+        self.master.iconphoto(False, tk.PhotoImage(file='calculator.png'))
+        self.master.minsize(354, 480)
         self.master.maxsize(1000, 720)
         # binding event handling method for window configuration
         # (resize, move)
@@ -120,7 +107,7 @@ class Application(tk.Frame):
     # handels the configure event of the application
     # (resize, move)
     def handleConfigure(self, event):
-        #print("window size and position: ", self.master.winfo_geometry())
+        # print("window size and position: ", self.master.winfo_geometry())
         pass
 
     # create widgets: label, entries, buttons
@@ -162,6 +149,12 @@ class Application(tk.Frame):
         self.btnRun = tk.Button(self, text="Calculate!")
         self.btnRun.grid(column=2, row=5, padx='5', pady='5', sticky="nesw")
         self.btnRun.bind("<Button-1>", self.handleCalculate)
+        # Row 6: image
+        imgOhmsLaw = ImageTk.PhotoImage(Image.open("ohms_law.gif"))
+        self.Panel = tk.Label(self, image=imgOhmsLaw)
+        self.Panel.image = imgOhmsLaw
+        self.Panel.grid(column=0, row=6, columnspan=3, padx='5', pady='5', sticky="nesw")
+
 
 # 
 # instance of Tk class
